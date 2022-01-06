@@ -2,6 +2,52 @@ import React from "react";
 import getCryptoPriceRangeInfo from "../services/CryptoService";
 import { convDateToUTCUnix } from "../utils/utils";
 
+const getCloserToMidNightPrice = (
+  prevPriceTimeObj,
+  curPriceTimeObj,
+  prices,
+  index
+) => {
+  const curPriceMinutesToMidNight =
+    curPriceTimeObj.getUTCHours() * 60 + curPriceTimeObj.getUTCMinutes();
+  const prevPriceMinutesToMidNight =
+    (23 - prevPriceTimeObj.getUTCHours()) * 60 +
+    (60 - prevPriceTimeObj.getUTCMinutes());
+  if (curPriceMinutesToMidNight < prevPriceMinutesToMidNight) {
+    return prices[index][1];
+  } else {
+    return prices[index - 1][1];
+  }
+};
+
+const getIs24HourInterval = (prices) => {
+  let startCount = false;
+  let countDone = false;
+  let dataPointsBetweenDays = 0;
+  for (let index = 0; index < prices.length; index++) {
+    const price = prices[index];
+
+    if (index === 0) {
+      continue;
+    }
+
+    var curPriceTimeObj = new Date(price[0]);
+    var prevPriceTimeObj = new Date(prices[index - 1][0]);
+
+    if (curPriceTimeObj.getUTCDate() !== prevPriceTimeObj.getUTCDate()) {
+      if (startCount) {
+        countDone = true;
+        break;
+      }
+      startCount = true;
+    }
+    if (startCount === true && countDone === false) {
+      dataPointsBetweenDays++;
+    }
+  }
+  return dataPointsBetweenDays < 10;
+};
+
 // component that gets the longest bear trend between startDate and endDate
 const BearTrendButton = ({ startDate, endDate, setResult }) => {
   const handleBearTrendClick = () => {
@@ -16,64 +62,42 @@ const BearTrendButton = ({ startDate, endDate, setResult }) => {
 
     getCryptoPriceRangeInfo(startDateUnix, endDateUnix)
       .then((response) => {
-        //console.log(response.data.prices);
+        const prices = response.data.prices;
 
-        if (
-          response.data.prices[2][0] - response.data.prices[1][0] >
-          45000000
-        ) {
-          var is24HourInterval = true;
-        }
+        let is24HourInterval = getIs24HourInterval(prices);
+        console.log("is 24h interval   ", is24HourInterval);
 
         var currentBearTrend = 0;
         var prevDayPrice = null;
         var priceMidNight = null;
         var checkTrend = false;
 
-        response.data.prices.forEach((price, index, prices) => {
+        for (let index = 0; index < prices.length; index++) {
+          const price = prices[index];
           var curPriceTimeObj = new Date(price[0]);
-          if (prices[index + 1] === undefined) {
+          var prevPriceTimeObj =
+            index === 0 ? null : new Date(prices[index - 1][0]);
+          if (
+            prices[index + 1] === undefined &&
+            curPriceTimeObj.getUTCHours() > 22
+          ) {
+            priceMidNight = price;
             checkTrend = true;
-            priceMidNight = price[1];
-            //console.log(curPriceTimeObj);
           } else {
             if (is24HourInterval === false) {
+              if (index === 0) {
+                continue;
+              }
               if (
-                curPriceTimeObj.getUTCHours() === 23 ||
-                curPriceTimeObj.getUTCHours() === 0
+                curPriceTimeObj.getUTCDate() !== prevPriceTimeObj.getUTCDate()
               ) {
-                if (curPriceTimeObj.getUTCHours() === 23) {
-                  const nextTime = new Date(prices[index + 1][0]);
-
-                  if (
-                    nextTime.getUTCHours() >= 0 &&
-                    nextTime.getUTCHours() !== 23
-                  ) {
-                    if (
-                      60 - curPriceTimeObj.getUTCMinutes() <
-                      nextTime.getUTCMinutes()
-                    ) {
-                      priceMidNight = price[1];
-                      checkTrend = true;
-                    } else {
-                      priceMidNight = prices[index + 1][1];
-                      checkTrend = true;
-                    }
-                  }
-                } else {
-                  if (index !== 0) {
-                    const prevTime = new Date(prices[index - 1][0]);
-                    if (
-                      prevTime.getUTCHours() !== 23 &&
-                      prevTime.getUTCHours() !== 0
-                    ) {
-                      priceMidNight = price[1];
-                      checkTrend = true;
-                    }
-                  } else if (index === 0) {
-                    prevDayPrice = price[1];
-                  }
-                }
+                priceMidNight = getCloserToMidNightPrice(
+                  prevPriceTimeObj,
+                  curPriceTimeObj,
+                  prices,
+                  index
+                );
+                checkTrend = true;
               }
             } else if (is24HourInterval === true) {
               priceMidNight = price[1];
@@ -82,19 +106,20 @@ const BearTrendButton = ({ startDate, endDate, setResult }) => {
           }
 
           if (checkTrend === true) {
-            if (priceMidNight >= prevDayPrice && prevDayPrice) {
-              currentBearTrend = 0;
-            } else if (priceMidNight < prevDayPrice && prevDayPrice) {
-              currentBearTrend++;
-              if (longestBearTrend < currentBearTrend) {
-                longestBearTrend = currentBearTrend;
+            if (index !== 0)
+              if (priceMidNight >= prevDayPrice && prevDayPrice) {
+                currentBearTrend = 0;
+              } else if (priceMidNight < prevDayPrice && prevDayPrice) {
+                currentBearTrend++;
+                if (longestBearTrend < currentBearTrend) {
+                  longestBearTrend = currentBearTrend;
+                }
               }
-            }
 
             prevDayPrice = priceMidNight;
             checkTrend = false;
           }
-        });
+        }
       })
       .then(() =>
         setResult(
