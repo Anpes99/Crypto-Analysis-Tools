@@ -25,6 +25,7 @@ export const convDateToUTCUnix = (date) => {
 };
 
 export const formatUTCTimeString = (date) => {
+  console.log(date);
   // give date in unix
   date = new Date(date);
   var UTCTimeString =

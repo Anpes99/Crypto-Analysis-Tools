@@ -59,11 +59,12 @@ const getLowestBeforeHighest = (prices, highestPriceDate) => {
 const getHighestAfterLowest = (prices, lowestPriceDate) => {
   let highestAfterLowest = 0;
   let highestAfterLowestDate;
-  prices.reverse().forEach((price) => {
+  const pricesReversed = prices.reverse();
+  pricesReversed.forEach((price) => {
     if (price[0] <= lowestPriceDate) {
       return;
     }
-    if (highestAfterLowest > price[1]) {
+    if (highestAfterLowest < price[1]) {
       highestAfterLowest = price[1];
       highestAfterLowestDate = price[0];
     }
@@ -106,7 +107,6 @@ const TimeMachineMaxProfitButton = ({ startDate, endDate, setResult }) => {
           getLowestBeforeHighest(prices, highestPriceDate);
         const { highestAfterLowest, highestAfterLowestDate } =
           getHighestAfterLowest(prices, lowestPriceDate);
-
         const profit1 = highestPrice - lowestBeforeHighest;
         const profit2 = highestAfterLowest - lowestPrice;
 
