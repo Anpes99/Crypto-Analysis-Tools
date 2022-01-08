@@ -2,6 +2,18 @@ import React from "react";
 import getCryptoPriceRangeInfo from "../services/CryptoService";
 import { formatUTCTimeString, convDateToUTCUnix } from "../utils/utils";
 
+const getHighestVolume = (total_volumes) => {
+  var curHighestVol = 0;
+  var curHighestVolDate = null;
+  total_volumes.forEach((dateVol) => {
+    if (dateVol[1] > curHighestVol) {
+      curHighestVol = dateVol[1];
+      curHighestVolDate = dateVol[0];
+    }
+  });
+  return { highestVolume: curHighestVol, highestVolumeDate: curHighestVolDate };
+};
+
 //component that gets the highest 24h trading volume between startDate and endDate
 const HighestTradVolButton = ({ startDate, endDate, setResult }) => {
   const handleHighTradingVolClick = () => {
@@ -10,19 +22,14 @@ const HighestTradVolButton = ({ startDate, endDate, setResult }) => {
     const startDateUnix = convDateToUTCUnix(startDateObject) - 3600000;
     const endDateUnix = convDateToUTCUnix(endDateObject) + 3600000;
     getCryptoPriceRangeInfo(startDateUnix, endDateUnix).then((response) => {
-      var curHighestVol = 0;
-      var curHighestVolDate = null;
-      response.data.total_volumes.forEach((dateVol) => {
-        if (dateVol[1] > curHighestVol) {
-          curHighestVol = dateVol[1];
-          curHighestVolDate = dateVol[0];
-        }
-      });
+      const { highestVolume, highestVolumeDate } = getHighestVolume(
+        response.data.total_volumes
+      );
 
-      const highestVolDate = new Date(curHighestVolDate);
+      const highestVolDate = new Date(highestVolumeDate);
       setResult(
         "Highest 24h volume in given date range is " +
-          curHighestVol +
+          highestVolume +
           "€ at date: " +
           formatUTCTimeString(highestVolDate.getTime())
       );

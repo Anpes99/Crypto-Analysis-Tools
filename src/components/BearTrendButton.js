@@ -48,6 +48,26 @@ const getIs24HourInterval = (prices) => {
   return dataPointsBetweenDays < 10;
 };
 
+const checkCurrentTrend = (
+  priceMidNight,
+  prevDayPrice,
+  currentBearTrend,
+  longestBearTrend
+) => {
+  if (priceMidNight >= prevDayPrice && prevDayPrice) {
+    currentBearTrend = 0;
+  } else if (priceMidNight < prevDayPrice && prevDayPrice) {
+    currentBearTrend++;
+    if (longestBearTrend < currentBearTrend) {
+      longestBearTrend = currentBearTrend;
+    }
+  }
+  return {
+    curBearTrend: currentBearTrend,
+    curLongestBearTrend: longestBearTrend,
+  };
+};
+
 // component that gets the longest bear trend between startDate and endDate
 const BearTrendButton = ({ startDate, endDate, setResult }) => {
   const handleBearTrendClick = () => {
@@ -106,15 +126,14 @@ const BearTrendButton = ({ startDate, endDate, setResult }) => {
           }
 
           if (checkTrend === true) {
-            if (index !== 0)
-              if (priceMidNight >= prevDayPrice && prevDayPrice) {
-                currentBearTrend = 0;
-              } else if (priceMidNight < prevDayPrice && prevDayPrice) {
-                currentBearTrend++;
-                if (longestBearTrend < currentBearTrend) {
-                  longestBearTrend = currentBearTrend;
-                }
-              }
+            const { curLongestBearTrend, curBearTrend } = checkCurrentTrend(
+              priceMidNight,
+              prevDayPrice,
+              currentBearTrend,
+              longestBearTrend
+            );
+            currentBearTrend = curBearTrend;
+            longestBearTrend = curLongestBearTrend;
 
             prevDayPrice = priceMidNight;
             checkTrend = false;
