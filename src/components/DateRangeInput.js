@@ -1,28 +1,30 @@
 import React from "react";
+import TextField from "@mui/material/TextField";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import DatePicker from "@mui/lab/DatePicker";
 
-const DateRangeInput = ({ setStartDate, setEndDate }) => {
+const DateRangeInput = ({ setStartDate, startDate, endDate, setEndDate }) => {
   return (
-    <div>
-      <div>
-        <label htmlFor="startDate">Start date:</label>
-        <input
-          type="date"
-          id="startDate"
-          onChange={(event) => setStartDate(event.target.value)}
-          min="2010-01-01"
-          max="2025-12-31"
+    <div className="">
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DatePicker
+          label="Start Date"
+          value={startDate}
+          onChange={(newValue) => {
+            setStartDate(newValue);
+          }}
+          renderInput={(params) => <TextField {...params} />}
         />
-      </div>
-      <div>
-        <label htmlFor="endDate">End date:</label>
-        <input
-          type="date"
-          id="endDate"
-          onChange={(event) => setEndDate(event.target.value)}
-          min="2010-01-01"
-          max="2025-12-31"
+        <DatePicker
+          label="End Date"
+          value={endDate}
+          onChange={(newValue) => {
+            setEndDate(newValue);
+          }}
+          renderInput={(params) => <TextField {...params} />}
         />
-      </div>
+      </LocalizationProvider>
     </div>
   );
 };

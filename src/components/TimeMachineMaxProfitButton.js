@@ -1,5 +1,12 @@
+import { ToggleButton } from "@mui/material";
+import moment from "moment";
 import React from "react";
-import getCryptoPriceRangeInfo from "../services/CryptoService";
+import { useDispatch } from "react-redux";
+import useCryptoPriceRangeInfo from "../services/CryptoService";
+import {
+  setCryptoPriceRangeData,
+  setResultStartEndDates,
+} from "../slices/appSlice";
 import { convDateToUTCUnix, formatUTCTimeString } from "../utils/utils";
 
 const priceOnlyDeclines = (prices) => {
@@ -59,7 +66,9 @@ const getLowestBeforeHighest = (prices, highestPriceDate) => {
 const getHighestAfterLowest = (prices, lowestPriceDate) => {
   let highestAfterLowest = 0;
   let highestAfterLowestDate;
-  const pricesReversed = prices.reverse();
+  console.log(prices);
+  const prices1 = [...prices];
+  const pricesReversed = prices1.reverse();
   pricesReversed.forEach((price) => {
     if (price[0] <= lowestPriceDate) {
       return;
@@ -73,14 +82,30 @@ const getHighestAfterLowest = (prices, lowestPriceDate) => {
 };
 
 //component that gets the highest profit margin for buying and selling between startDate and endDate
-const TimeMachineMaxProfitButton = ({ startDate, endDate, setResult }) => {
+const TimeMachineMaxProfitButton = ({
+  startDate,
+  endDate,
+  setResult,
+  setData,
+}) => {
+  const dispatch = useDispatch();
+  const [getCryptoPriceRangeInfo] = useCryptoPriceRangeInfo();
+
   const handleTimeMachineMaxProfitClick = () => {
-    const startDateObject = new Date(startDate + "T00:00:00");
-    const endDateObject = new Date(endDate + "T00:00:00");
+    const startDateObject = new Date(
+      moment(startDate).format("YYYY-MM-DD") + "T00:00:00"
+    );
+    const endDateObject = new Date(
+      moment(endDate).format("YYYY-MM-DD") + "T00:00:00"
+    );
     const startDateUnix = convDateToUTCUnix(startDateObject) - 3600000;
     const endDateUnix = convDateToUTCUnix(endDateObject) + 3600000;
+
     getCryptoPriceRangeInfo(startDateUnix, endDateUnix).then((response) => {
       const prices = response.data.prices;
+
+      dispatch(setCryptoPriceRangeData(response.data));
+
       if (priceOnlyDeclines(prices) === true) {
         setResult(
           "it is not possible to buy & sell for profit in given date range"
@@ -96,6 +121,20 @@ const TimeMachineMaxProfitButton = ({ startDate, endDate, setResult }) => {
 
       if (highestPriceDate > lowestPriceDate) {
         console.log(lowestPriceDateObj);
+
+        dispatch(
+          setResultStartEndDates({
+            startDate: {
+              date: lowestPriceDateObj.getTime(),
+              text: "Best time to buy",
+            },
+            endDate: {
+              date: highestPriceDateObj.getTime(),
+              text: "Best time to sell",
+            },
+          })
+        );
+
         setResult(
           "best time to buy: " +
             formatUTCTimeString(lowestPriceDateObj.getTime()) +
@@ -114,6 +153,19 @@ const TimeMachineMaxProfitButton = ({ startDate, endDate, setResult }) => {
         const highestAfterLowestDateObj = new Date(highestAfterLowestDate);
 
         if (profit1 > profit2) {
+          dispatch(
+            setResultStartEndDates({
+              startDate: {
+                date: lowestBeforeHighestDateObj.getTime(),
+                text: "Best time to buy",
+              },
+              endDate: {
+                date: highestPriceDateObj.getTime(),
+                text: "Best time to sell",
+              },
+            })
+          );
+
           console.log(highestPriceDateObj);
           setResult(
             "best time to buy: " +
@@ -122,6 +174,19 @@ const TimeMachineMaxProfitButton = ({ startDate, endDate, setResult }) => {
               formatUTCTimeString(highestPriceDateObj.getTime())
           );
         } else if (profit2 > profit1) {
+          dispatch(
+            setResultStartEndDates({
+              startDate: {
+                date: lowestPriceDateObj.getTime(),
+                text: "Best time to buy",
+              },
+              endDate: {
+                date: highestAfterLowestDateObj.getTime(),
+                text: "Best time to sell",
+              },
+            })
+          );
+
           setResult(
             "best time to buy: " +
               formatUTCTimeString(lowestPriceDateObj.getTime()) +
@@ -136,9 +201,12 @@ const TimeMachineMaxProfitButton = ({ startDate, endDate, setResult }) => {
   };
 
   return (
-    <button onClick={handleTimeMachineMaxProfitClick}>
+    <ToggleButton
+      value="TimeMachineProfit"
+      onClick={handleTimeMachineMaxProfitClick}
+    >
       Time machine max profit
-    </button>
+    </ToggleButton>
   );
 };
 
