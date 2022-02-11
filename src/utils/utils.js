@@ -25,7 +25,6 @@ export const convDateToUTCUnix = (date) => {
 };
 
 export const formatUTCTimeString = (date) => {
-  console.log(date);
   // give date in unix
   date = new Date(date);
   var UTCTimeString =
@@ -42,6 +41,43 @@ export const formatUTCTimeString = (date) => {
       ? "0" + date.getUTCMinutes()
       : date.getUTCMinutes()) +
     "  UTC";
-  console.log(UTCTimeString);
+
   return UTCTimeString;
+};
+
+export const convertPriceIntervalToDay = (arr) => {
+  const newArr = arr?.filter((obj, i) => {
+    const date = new Date(obj?.[0]);
+    const prevDate = new Date(arr?.[i - 1]?.[0]);
+    return prevDate.getUTCDate() !== date.getUTCDate();
+  });
+  return newArr;
+};
+
+export const getIs24HourInterval = (prices) => {
+  let startCount = false;
+  let countDone = false;
+  let dataPointsBetweenDays = 0;
+  for (let index = 0; index < prices?.length; index++) {
+    const price = prices[index];
+
+    if (index === 0) {
+      continue;
+    }
+
+    var curPriceTimeObj = new Date(price[0]);
+    var prevPriceTimeObj = new Date(prices[index - 1][0]);
+
+    if (curPriceTimeObj.getUTCDate() !== prevPriceTimeObj.getUTCDate()) {
+      if (startCount) {
+        countDone = true;
+        break;
+      }
+      startCount = true;
+    }
+    if (startCount === true && countDone === false) {
+      dataPointsBetweenDays++;
+    }
+  }
+  return dataPointsBetweenDays < 20;
 };

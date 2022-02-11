@@ -1,8 +1,9 @@
 import React from "react";
-import { useDispatch } from "react-redux";
-import useCryptoPriceRangeInfo from "../services/CryptoService";
+import { useDispatch, useSelector } from "react-redux";
+import useCryptoPriceRangeInfo from "../hooks/useGetCryptoData";
 import {
   setCryptoPriceRangeData,
+  setCurrentAnalysis,
   setResultStartEndDates,
 } from "../slices/appSlice";
 import { convDateToUTCUnix } from "../utils/utils";
@@ -28,42 +29,12 @@ const getCloserToMidNightPrice = (
   }
 };
 
-const getIs24HourInterval = (prices) => {
-  let startCount = false;
-  let countDone = false;
-  let dataPointsBetweenDays = 0;
-  for (let index = 0; index < prices.length; index++) {
-    const price = prices[index];
-
-    if (index === 0) {
-      continue;
-    }
-
-    var curPriceTimeObj = new Date(price[0]);
-    var prevPriceTimeObj = new Date(prices[index - 1][0]);
-
-    if (curPriceTimeObj.getUTCDate() !== prevPriceTimeObj.getUTCDate()) {
-      if (startCount) {
-        countDone = true;
-        break;
-      }
-      startCount = true;
-    }
-    if (startCount === true && countDone === false) {
-      dataPointsBetweenDays++;
-    }
-  }
-  return dataPointsBetweenDays < 10;
-};
-
 const checkCurrentTrend = (
   priceMidNight,
   prevDayPrice,
   currentBearTrend,
   longestBearTrend
 ) => {
-  console.log(priceMidNight, prevDayPrice, currentBearTrend, longestBearTrend);
-
   if (priceMidNight[1] >= prevDayPrice?.[1] && prevDayPrice) {
     currentBearTrend = { trend: 0, startDate: priceMidNight[0] };
   } else if (priceMidNight[1] < prevDayPrice?.[1] && prevDayPrice) {
@@ -82,32 +53,20 @@ const checkCurrentTrend = (
 };
 
 // component that gets the longest bear trend between startDate and endDate
-const BearTrendButton = ({ startDate, endDate, setResult, setData }) => {
+const BearTrendButton = ({ setResult }) => {
+  const is24HourInterval = useSelector((state) => state.app.is24HourInterval);
+  const currentAnalysis = useSelector((state) => state.app.currentAnalysis);
   const dispatch = useDispatch();
   const [getCryptoPriceRangeInfo] = useCryptoPriceRangeInfo();
 
   const handleBearTrendClick = () => {
-    const startDateObject = new Date(
-      moment(startDate).format("YYYY-MM-DD") + "T00:00:00"
-    );
-    const endDateObject = new Date(
-      moment(endDate).format("YYYY-MM-DD") + "T00:00:00"
-    );
-
-    console.log("before  ", endDateObject);
-
     var longestBearTrend = { trend: 0, startDate: null, endDate: null };
-    const startDateUnix = convDateToUTCUnix(startDateObject) - 3600000;
-    const endDateUnix = convDateToUTCUnix(endDateObject) + 3600000;
-    console.log("after  ", new Date(endDateUnix));
-
-    getCryptoPriceRangeInfo(startDateUnix, endDateUnix)
+    dispatch(setCurrentAnalysis(1));
+    getCryptoPriceRangeInfo()
       .then((response) => {
         console.log(response);
         const prices = response.data.prices;
-        dispatch(setCryptoPriceRangeData(response.data));
 
-        let is24HourInterval = getIs24HourInterval(prices);
         console.log("is 24h interval   ", response.data);
 
         var currentBearTrend = { trend: 0 };
@@ -118,8 +77,9 @@ const BearTrendButton = ({ startDate, endDate, setResult, setData }) => {
         var checkTrend = false;
         console.log(prices);
 
-        for (let index = 0; index < prices.length; index++) {
+        for (let index = 0; index < prices?.length; index++) {
           const price = prices[index];
+
           var curPriceTimeObj = new Date(price[0]);
           var prevPriceTimeObj =
             index === 0 ? null : new Date(prices[index - 1][0]);
@@ -191,7 +151,11 @@ const BearTrendButton = ({ startDate, endDate, setResult, setData }) => {
   };
 
   return (
-    <ToggleButton value="bearTrend" onClick={handleBearTrendClick}>
+    <ToggleButton
+      selected={currentAnalysis === 1 ? true : false}
+      value="bearTrend"
+      onClick={handleBearTrendClick}
+    >
       Longest Bear trend
     </ToggleButton>
   );

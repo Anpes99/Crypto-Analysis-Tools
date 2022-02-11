@@ -1,10 +1,11 @@
 import { ToggleButton } from "@mui/material";
 import moment from "moment";
 import React from "react";
-import { useDispatch } from "react-redux";
-import useCryptoPriceRangeInfo from "../services/CryptoService";
+import { useDispatch, useSelector } from "react-redux";
+import useCryptoPriceRangeInfo from "../hooks/useGetCryptoData";
 import {
   setCryptoPriceRangeData,
+  setCurrentAnalysis,
   setResultStartEndDates,
 } from "../slices/appSlice";
 import { formatUTCTimeString, convDateToUTCUnix } from "../utils/utils";
@@ -12,7 +13,7 @@ import { formatUTCTimeString, convDateToUTCUnix } from "../utils/utils";
 const getHighestVolume = (total_volumes) => {
   var curHighestVol = 0;
   var curHighestVolDate = null;
-  total_volumes.forEach((dateVol) => {
+  total_volumes?.forEach((dateVol) => {
     if (dateVol[1] > curHighestVol) {
       curHighestVol = dateVol[1];
       curHighestVolDate = dateVol[0];
@@ -22,11 +23,19 @@ const getHighestVolume = (total_volumes) => {
 };
 
 //component that gets the highest 24h trading volume between startDate and endDate
-const HighestTradVolButton = ({ startDate, endDate, setResult, setData }) => {
+const HighestTradVolButton = ({ setResult, setData }) => {
+  const currentAnalysis = useSelector((state) => state.app.currentAnalysis);
+  const startDate1 = useSelector((state) => state.app.startDate);
+  const endDate1 = useSelector((state) => state.app.endDate);
+  const startDate = JSON.parse(startDate1);
+  const endDate = JSON.parse(endDate1);
+
   const dispatch = useDispatch();
   const [getCryptoPriceRangeInfo] = useCryptoPriceRangeInfo();
 
   const handleHighTradingVolClick = () => {
+    dispatch(setCurrentAnalysis(2));
+
     const startDateObject = new Date(
       moment(startDate).format("YYYY-MM-DD") + "T00:00:00"
     );
@@ -39,7 +48,6 @@ const HighestTradVolButton = ({ startDate, endDate, setResult, setData }) => {
       const { highestVolume, highestVolumeDate } = getHighestVolume(
         response.data.total_volumes
       );
-      dispatch(setCryptoPriceRangeData(response.data));
 
       const highestVolDate = new Date(highestVolumeDate);
       dispatch(
@@ -57,7 +65,11 @@ const HighestTradVolButton = ({ startDate, endDate, setResult, setData }) => {
   };
 
   return (
-    <ToggleButton value="HighestTradingVol" onClick={handleHighTradingVolClick}>
+    <ToggleButton
+      selected={currentAnalysis === 2 ? true : false}
+      value="HighestTradingVol"
+      onClick={handleHighTradingVolClick}
+    >
       Highest trading volume
     </ToggleButton>
   );

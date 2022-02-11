@@ -4,18 +4,15 @@ import DataChart from "./components/DataChart";
 import DateRangeInput from "./components/DateRangeInput";
 import HighestTradVolButton from "./components/HighestTradVolButton";
 import TimeMachineMaxProfitButton from "./components/TimeMachineMaxProfitButton";
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import { store } from "./app/store";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import "./App.css";
 
 function App() {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
   const [result, setResult] = useState("");
   const cryptoPriceRangeData = store.getState().app.cryptoPriceRangeData;
   const [alignment, setAlignment] = useState("TimeMachineProfit");
-
   const handleChange = (event, newAlignment) => {
     setAlignment(newAlignment);
   };
@@ -23,34 +20,11 @@ function App() {
   return (
     <div className="App">
       <Provider store={store}>
-        <DateRangeInput
-          startDate={startDate}
-          endDate={endDate}
-          setStartDate={setStartDate}
-          setEndDate={setEndDate}
-        />
-        <ToggleButtonGroup
-          color="primary"
-          value={alignment}
-          exclusive
-          onChange={handleChange}
-        >
-          <BearTrendButton
-            startDate={startDate}
-            endDate={endDate}
-            setResult={setResult}
-          />
-          <HighestTradVolButton
-            startDate={startDate}
-            endDate={endDate}
-            setResult={setResult}
-          />
-          <TimeMachineMaxProfitButton
-            startDate={startDate}
-            endDate={endDate}
-            setResult={setResult}
-          />
-        </ToggleButtonGroup>
+        <DateRangeInput />
+
+        <BearTrendButton setResult={setResult} />
+        <HighestTradVolButton setResult={setResult} />
+        <TimeMachineMaxProfitButton setResult={setResult} />
         <DataChart />
       </Provider>
       <p>{result}</p>

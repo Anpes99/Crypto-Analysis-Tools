@@ -9,6 +9,9 @@ const initialState = {
   prevApiCallUrl: "",
   sma: 50,
   startDate: null,
+  endDate: null,
+  is24HourInterval: false,
+  currentAnalysis: null,
 };
 
 export const appSlice = createSlice({
@@ -27,8 +30,17 @@ export const appSlice = createSlice({
     setStartDate: (state, action) => {
       state.startDate = action.payload;
     },
+    setEndDate: (state, action) => {
+      state.endDate = action.payload;
+    },
     setSMA: (state, action) => {
       state.sma = action.payload;
+    },
+    setIs24HourInterval: (state, action) => {
+      state.is24HourInterval = action.payload;
+    },
+    setCurrentAnalysis: (state, action) => {
+      state.currentAnalysis = action.payload;
     },
   },
 });
@@ -38,7 +50,10 @@ export const {
   setResultStartEndDates,
   setPrevApiCallUrl,
   setStartDate,
+  setEndDate,
   setSMA,
+  setIs24HourInterval,
+  setCurrentAnalysis,
 } = appSlice.actions;
 
 // Selectors - This is how we pull information from the Global store slice
