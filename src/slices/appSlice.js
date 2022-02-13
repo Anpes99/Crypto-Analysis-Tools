@@ -7,7 +7,6 @@ const initialState = {
     endDate: { date: null, text: "" },
   },
   prevApiCallUrl: "",
-  sma: 50,
   startDate: null,
   endDate: null,
   is24HourInterval: false,
@@ -33,9 +32,6 @@ export const appSlice = createSlice({
     setEndDate: (state, action) => {
       state.endDate = action.payload;
     },
-    setSMA: (state, action) => {
-      state.sma = action.payload;
-    },
     setIs24HourInterval: (state, action) => {
       state.is24HourInterval = action.payload;
     },
@@ -51,7 +47,6 @@ export const {
   setPrevApiCallUrl,
   setStartDate,
   setEndDate,
-  setSMA,
   setIs24HourInterval,
   setCurrentAnalysis,
 } = appSlice.actions;

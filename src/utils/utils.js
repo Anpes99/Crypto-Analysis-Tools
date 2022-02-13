@@ -81,3 +81,11 @@ export const getIs24HourInterval = (prices) => {
   }
   return dataPointsBetweenDays < 20;
 };
+
+export const mergeArrays = ({ startArray, middleArray, endArray }) => {
+  middleArray?.unshift(startArray);
+  middleArray?.push(endArray);
+
+  middleArray = middleArray.flat();
+  return middleArray;
+};

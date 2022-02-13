@@ -3,15 +3,17 @@ import { Chart as ChartJS, registerables } from "chart.js";
 import { useEffect, useState } from "react";
 import { Chart } from "react-chartjs-2";
 import { useSelector } from "react-redux";
-import { convertPriceIntervalToDay } from "../utils/utils";
+import { convertPriceIntervalToDay, mergeArrays } from "../utils/utils";
 
 ChartJS.register(...registerables);
 
 function DataChart({}) {
-  const startDate1 = useSelector((state) => state.app.startDate);
-  const endDate1 = useSelector((state) => state.app.endDate);
-  const startDate = new Date(JSON.parse(startDate1));
-  const endDate = new Date(JSON.parse(endDate1));
+  const startDate = useSelector(
+    (state) => new Date(JSON.parse(state.app.startDate))
+  );
+  const endDate = useSelector(
+    (state) => new Date(JSON.parse(state.app.endDate))
+  );
   const resultStartEndDates = useSelector(
     (state) => state.app.resultStartEndDates
   );
@@ -19,6 +21,9 @@ function DataChart({}) {
   const prevApiCallUrl = useSelector((state) => state.app.prevApiCallUrl);
   const is24HourInterval = useSelector((state) => state.app.is24HourInterval);
   const [smaDataPrices, setSmaDataPrices] = useState(null);
+
+  const [arrayJoinIndex, setArrayJoinIndex] = useState(null);
+  const [lastArrayJoinIndex, setLastArrayJoinIndex] = useState(null);
 
   const labels = cryptoData?.prices?.map(
     (price) =>
@@ -29,8 +34,6 @@ function DataChart({}) {
       "/" +
       new Date(price[0]).getFullYear()
   );
-  const [arrayJoinIndex, setArrayJoinIndex] = useState(null);
-  const [lastArrayJoinIndex, setLastArrayJoinIndex] = useState(null);
   useEffect(async () => {
     try {
       const smaStarturl = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=eur&from=${
@@ -57,15 +60,10 @@ function DataChart({}) {
 
       setLastArrayJoinIndex(startPrices.length + newPrices.length - 2);
 
-      newPrices?.unshift(startPrices);
-      newPrices?.push(endPrices);
-
-      newPrices = newPrices.flat();
-
-      newPrices?.findIndex((p) => {
-        if (p?.[0] === cryptoData?.prices?.[0]?.[0]) {
-          return true;
-        }
+      newPrices = mergeArrays({
+        startArray: startPrices,
+        middleArray: newPrices,
+        endArray: endPrices,
       });
 
       //  setSmaData(newPrices);
@@ -99,11 +97,11 @@ function DataChart({}) {
         borderWidth: 2,
         data: cryptoData?.prices?.map((price1, i) => {
           try {
-            if (
+            const enoughDataExistsForSma =
               smaDataPrices[arrayJoinIndex + i - lastArrayJoinIndex] &&
               smaDataPrices[arrayJoinIndex + i + lastArrayJoinIndex] &&
-              smaDataPrices
-            ) {
+              smaDataPrices;
+            if (enoughDataExistsForSma) {
               const subArray = smaDataPrices?.slice(
                 i,
                 arrayJoinIndex + i + lastArrayJoinIndex

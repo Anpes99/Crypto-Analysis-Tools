@@ -1,15 +1,9 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useCryptoPriceRangeInfo from "../hooks/useGetCryptoData";
-import {
-  setCryptoPriceRangeData,
-  setCurrentAnalysis,
-  setResultStartEndDates,
-} from "../slices/appSlice";
-import { convDateToUTCUnix } from "../utils/utils";
+import { setCurrentAnalysis, setResultStartEndDates } from "../slices/appSlice";
 
 import ToggleButton from "@mui/material/ToggleButton";
-import moment from "moment";
 
 const getCloserToMidNightPrice = (
   prevPriceTimeObj,
@@ -35,13 +29,15 @@ const checkCurrentTrend = (
   currentBearTrend,
   longestBearTrend
 ) => {
-  if (priceMidNight[1] >= prevDayPrice?.[1] && prevDayPrice) {
+  const bearTrendEnded = priceMidNight[1] >= prevDayPrice?.[1] && prevDayPrice;
+  if (bearTrendEnded) {
     currentBearTrend = { trend: 0, startDate: priceMidNight[0] };
-  } else if (priceMidNight[1] < prevDayPrice?.[1] && prevDayPrice) {
+  } else if (!bearTrendEnded) {
     currentBearTrend.trend++;
     currentBearTrend.endDate = priceMidNight[0];
-    if (longestBearTrend.trend < currentBearTrend.trend) {
-      console.log(currentBearTrend);
+    const currentBearTrendIsLongest =
+      longestBearTrend.trend < currentBearTrend.trend;
+    if (currentBearTrendIsLongest) {
       longestBearTrend = currentBearTrend;
     }
   }
@@ -71,7 +67,6 @@ const BearTrendButton = ({ setResult }) => {
 
         var currentBearTrend = { trend: 0 };
 
-        var currentBearTrendStartDate;
         var prevDayPrice = null;
         var priceMidNight = null;
         var checkTrend = false;
@@ -83,10 +78,12 @@ const BearTrendButton = ({ setResult }) => {
           var curPriceTimeObj = new Date(price[0]);
           var prevPriceTimeObj =
             index === 0 ? null : new Date(prices[index - 1][0]);
-          if (
+
+          const isLastElement =
             prices[index + 1] === undefined &&
-            curPriceTimeObj.getUTCHours() > 22
-          ) {
+            curPriceTimeObj.getUTCHours() > 22;
+
+          if (isLastElement) {
             priceMidNight = price;
             checkTrend = true;
           } else {
@@ -94,9 +91,11 @@ const BearTrendButton = ({ setResult }) => {
               if (index === 0) {
                 continue;
               }
-              if (
-                curPriceTimeObj.getUTCDate() !== prevPriceTimeObj.getUTCDate()
-              ) {
+
+              const elementDateIsDiffThenPrev = prevPriceTimeObj
+                ? curPriceTimeObj.getUTCDate() !== prevPriceTimeObj.getUTCDate()
+                : false;
+              if (elementDateIsDiffThenPrev) {
                 priceMidNight = getCloserToMidNightPrice(
                   prevPriceTimeObj,
                   curPriceTimeObj,

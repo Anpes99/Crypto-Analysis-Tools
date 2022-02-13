@@ -19,10 +19,8 @@ const useCryptoPriceRangeInfo = () => {
   const cryptoPriceRangeData = useSelector(
     (state) => state.app.cryptoPriceRangeData
   );
-  const startDate1 = useSelector((state) => state.app.startDate);
-  const endDate1 = useSelector((state) => state.app.endDate);
-  const startDate = JSON.parse(startDate1);
-  const endDate = JSON.parse(endDate1);
+  const startDate = useSelector((state) => JSON.parse(state.app.startDate));
+  const endDate = useSelector((state) => JSON.parse(state.app.endDate));
 
   const getCryptoPriceRangeInfo = async () => {
     const startDateObject = new Date(
