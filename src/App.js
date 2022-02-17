@@ -20,14 +20,19 @@ function App() {
   return (
     <div className="App">
       <Provider store={store}>
-        <DateRangeInput />
+        <div className="controls">
+          {" "}
+          <DateRangeInput />
+          <div className="buttons-container">
+            <BearTrendButton setResult={setResult} />
+            <HighestTradVolButton setResult={setResult} />
+            <TimeMachineMaxProfitButton setResult={setResult} />
+            {/*  <p className="result">{result}</p> */}
+          </div>
+        </div>
 
-        <BearTrendButton setResult={setResult} />
-        <HighestTradVolButton setResult={setResult} />
-        <TimeMachineMaxProfitButton setResult={setResult} />
         <DataChart />
       </Provider>
-      <p>{result}</p>
     </div>
   );
 }

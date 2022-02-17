@@ -15,9 +15,10 @@ const DateRangeInput = ({}) => {
   const dispatch = useDispatch();
 
   return (
-    <div className="">
+    <div className="daterange-inputs">
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
+          className="u-mb-1"
           label="Start Date"
           value={startDate}
           onChange={(newValue) => {

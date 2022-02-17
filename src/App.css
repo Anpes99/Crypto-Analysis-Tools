@@ -2,8 +2,42 @@
   padding: 3rem;
   font-family: sans-serif;
   font-weight: 600;
+  display: flex;
 }
 
 .u-mb-1 {
+  margin-bottom: 1rem;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem;
+}
+
+.buttons-container {
+  display: flex;
+  padding: 0.5rem;
+  flex-direction: column;
+}
+.buttons-container > * {
+}
+
+.datachart {
+  flex-grow: 1;
+  max-width: 70%;
+}
+
+.result {
+  max-width: 10rem;
+}
+
+.daterange-inputs {
+  display: flex;
+  flex-direction: column;
+}
+
+.daterange-inputs:first-child {
   margin-bottom: 1rem;
 }

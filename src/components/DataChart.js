@@ -152,7 +152,11 @@ function DataChart({}) {
     },
   };
 
-  return <Chart type="bar" data={data} />;
+  return (
+    <div className="datachart">
+      <Chart type="bar" data={data} />
+    </div>
+  );
 }
 
 export default DataChart;
