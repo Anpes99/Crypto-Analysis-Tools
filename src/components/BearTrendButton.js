@@ -151,6 +151,15 @@ const BearTrendButton = ({ setResult }) => {
 
   return (
     <ToggleButton
+      sx={{
+        color: "#1c1917",
+        bgcolor: "white",
+        ":hover": {
+          backgroundColor: "#84cc16",
+
+          color: "#fff",
+        },
+      }}
       selected={currentAnalysis === 1 ? true : false}
       value="bearTrend"
       onClick={handleBearTrendClick}

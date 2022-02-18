@@ -200,6 +200,14 @@ const TimeMachineMaxProfitButton = ({ setResult, setData }) => {
 
   return (
     <ToggleButton
+      sx={{
+        color: "#1c1917",
+        bgcolor: "white",
+        ":hover": {
+          backgroundColor: "#84cc16",
+          color: "#fff",
+        },
+      }}
       selected={currentAnalysis === 3 ? true : false}
       value="TimeMachineProfit"
       onClick={handleTimeMachineMaxProfitClick}

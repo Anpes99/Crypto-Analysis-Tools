@@ -18,22 +18,29 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <Provider store={store}>
-        <div className="controls">
-          {" "}
-          <DateRangeInput />
-          <div className="buttons-container">
-            <BearTrendButton setResult={setResult} />
-            <HighestTradVolButton setResult={setResult} />
-            <TimeMachineMaxProfitButton setResult={setResult} />
-            {/*  <p className="result">{result}</p> */}
-          </div>
-        </div>
+    <>
+      <div className="header">
+        <h1>Crypto Data-Analysis Tools</h1>
+      </div>
 
-        <DataChart />
-      </Provider>
-    </div>
+      <div className="App">
+        <Provider store={store}>
+          <div className="controls">
+            {" "}
+            <DateRangeInput />
+            <div className="buttons-container">
+              <BearTrendButton setResult={setResult} />
+              <HighestTradVolButton setResult={setResult} />
+              <TimeMachineMaxProfitButton setResult={setResult} />
+              {/*  <p className="result">{result}</p> */}
+            </div>
+          </div>
+
+          <DataChart />
+        </Provider>
+      </div>
+      <div className="shape"></div>
+    </>
   );
 }
 

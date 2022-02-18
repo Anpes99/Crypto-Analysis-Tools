@@ -66,6 +66,15 @@ const HighestTradVolButton = ({ setResult, setData }) => {
 
   return (
     <ToggleButton
+      sx={{
+        color: "#1c1917",
+        bgcolor: "white",
+        ":hover": {
+          backgroundColor: "#84cc16",
+
+          color: "#fff",
+        },
+      }}
       selected={currentAnalysis === 2 ? true : false}
       value="HighestTradingVol"
       onClick={handleHighTradingVolClick}
